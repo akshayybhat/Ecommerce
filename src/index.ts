@@ -1,13 +1,19 @@
 import express, {type Express, type Request, type Response} from "express"
+import "dotenv/config";
+import { PORT } from "./secrets.js";
+import router from "./routes/index.js";
 
 const app: Express = express();
-const port = 3000
 
-app.get("/", (req: Request, res:Response)=>{
-  res.send("working fine")
+app.use(express.json());
+
+app.use("/api", router)
+
+app.get("/", (req,res)=>{
+  res.send("working")
 })
 
-app.listen(port, () =>{
-  console.log(`App is running on port ${port}`)
+app.listen(PORT, () =>{
+  console.log(`App is running on port ${PORT}`)
 })
 
