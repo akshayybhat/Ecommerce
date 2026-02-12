@@ -78,3 +78,8 @@ export const login = async(req: Request, res:Response, next:NextFunction) =>{
   
 
 }
+export const me = async(req: Request, res:Response) =>{
+  res.json(req.user)
+
+
+}
