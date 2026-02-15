@@ -108,7 +108,6 @@ export const fetchAllProducts = async(req:Request, res:Response, next:NextFuncti
 
   try {
 
-
     const totalCount = await prisma.product.count()
 
     const allProducts = await prisma.product.findMany({
@@ -116,7 +115,7 @@ export const fetchAllProducts = async(req:Request, res:Response, next:NextFuncti
       take: 5
     })
 
-    res.json(allProducts)
+    res.json({allProducts, totalCount})
 
   } catch (error) {
     throw new UnProcessedEntity('Something went wrong', ErrorCode.UNPROCESSED_ENTITY, 500, error)
