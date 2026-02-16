@@ -24,6 +24,10 @@ model User {
   email String @unique
   password String
   role Role @default(USER)
+
+  defaultShippingAddressID String?
+  defaultBillingAddressID String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

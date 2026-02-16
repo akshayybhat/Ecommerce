@@ -1,13 +1,14 @@
 import {Router} from "express"
 import { authenticateUser } from "../middlewares/auth.js"
-import { addAddress, deleteAddress, fetchAllAddress } from "../controllers/user.js"
+import { addAddress, deleteAddress, fetchAllAddress, updateUser } from "../controllers/user.js"
 
 const userRouter: Router = Router()
 
 // create an address
-userRouter.post("/", [authenticateUser], addAddress);
-userRouter.delete("/:id", [authenticateUser], deleteAddress );
-userRouter.get("/", [authenticateUser], fetchAllAddress);
+userRouter.post("/address", [authenticateUser], addAddress);
+userRouter.delete("/address/:id", [authenticateUser], deleteAddress );
+userRouter.get("/address", [authenticateUser], fetchAllAddress);
+userRouter.put("/", [authenticateUser], updateUser);
 
 
 export default userRouter

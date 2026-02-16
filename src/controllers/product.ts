@@ -118,6 +118,6 @@ export const fetchAllProducts = async(req:Request, res:Response, next:NextFuncti
     res.json({allProducts, totalCount})
 
   } catch (error) {
-    throw new UnProcessedEntity('Something went wrong', ErrorCode.UNPROCESSED_ENTITY, 500, error)
+    return next( new UnProcessedEntity('Something went wrong', ErrorCode.UNPROCESSED_ENTITY, 500, error))
   }
 }
