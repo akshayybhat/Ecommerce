@@ -1,6 +1,8 @@
-import type { Request, Response } from "express";
+import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../../lib/prisma.js";
 import type { Params } from "../types/product.js";
+import { NotFound } from "../exceptions/notFound.js";
+import { ErrorCode } from "../exceptions/root.js";
 
 export const createOrder = async(req: Request<Params>, res: Response) =>{
   
@@ -67,3 +69,36 @@ export const createOrder = async(req: Request<Params>, res: Response) =>{
 
   })
 }
+
+export const getAllOrder = async(req: Request, res: Response) =>{
+  const orders = await prisma.order.findMany({
+    where: {
+      userId: req.user.id
+    }
+  })
+  res.json(orders)
+}
+
+
+export const getOrderbyId = async(req:Request<Params>, res: Response, next: NextFunction)=>{
+
+  try {
+    
+    const order  = await prisma.order.findFirstOrThrow({
+      where: {
+        id: req.params.id
+      },
+      include:{
+        orderProduct: true,
+        orderEvent: true
+      }
+    })
+    
+    res.json(order)
+  } catch (error) {
+    return next(new NotFound("Order ID not found.", ErrorCode.ORDER_ID_NOT_FOUND, error))
+  }
+
+
+}
+
