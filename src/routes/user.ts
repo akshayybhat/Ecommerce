@@ -8,7 +8,7 @@ const userRouter: Router = Router()
 userRouter.post("/address", [authenticateUser], addAddress);
 userRouter.delete("/address/:id", [authenticateUser], deleteAddress );
 userRouter.get("/address", [authenticateUser], fetchAllAddress);
-userRouter.put("/", [authenticateUser], updateUser);
+userRouter.put("/address", [authenticateUser], updateUser);
 
 
 export default userRouter

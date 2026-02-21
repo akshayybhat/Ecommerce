@@ -80,13 +80,13 @@ export const getAllOrder = async(req: Request, res: Response) =>{
 }
 
 
-export const getOrderbyId = async(req:Request<Params>, res: Response, next: NextFunction)=>{
+export const getOrderbyId = async(req:Request, res: Response, next: NextFunction)=>{
 
   try {
     
     const order  = await prisma.order.findFirstOrThrow({
       where: {
-        id: req.params.id
+        id: String(req.params.id)
       },
       include:{
         orderProduct: true,
@@ -102,3 +102,31 @@ export const getOrderbyId = async(req:Request<Params>, res: Response, next: Next
 
 }
 
+export const cancelOrder = async(req:Request, res:Response, next: NextFunction)=>{
+
+  await prisma.$transaction(async(tx)=>{
+
+    const cancelledOrder = await tx.order.update({
+      where: {
+        id: String(req.params.id),
+        userId: req.user.id
+        
+      },
+      data: {
+        status: "CANCELLED"
+      }
+    })
+
+    // update orderEvent table
+    const orderCancel = await tx.orderEvent.create({
+      data: {
+        orderId: cancelledOrder.id,
+        status: "CANCELLED"
+      }
+    })
+
+    res.json({cancelled: true, orderCancel})
+  })
+  
+
+}

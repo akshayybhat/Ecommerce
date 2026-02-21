@@ -35,7 +35,8 @@ export const deleteAddress = async(req: Request<Params>, res: Response, next: Ne
 
     await prisma.address.delete({
       where: {
-        id: idToDelete
+        id: idToDelete,
+        userId: req.user.id
       }
     })
 
@@ -76,7 +77,8 @@ export const updateUser = async(req: Request, res: Response, next: NextFunction)
     if (payload.data.defaultShippingAddressID){
       const shippingAddress = await prisma.address.findFirstOrThrow({
         where:{
-          id: payload.data.defaultShippingAddressID
+          id: payload.data.defaultShippingAddressID,
+          userId: req.user.id
         }
       })
 
@@ -90,7 +92,8 @@ export const updateUser = async(req: Request, res: Response, next: NextFunction)
     if (payload.data.defaultBillingAddressID){
       const billingAddress = await prisma.address.findFirstOrThrow({
         where:{
-          id: payload.data.defaultBillingAddressID
+          id: payload.data.defaultBillingAddressID,
+          userId: req.user.id
         }
       })
 
