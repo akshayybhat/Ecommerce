@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../../lib/prisma.js";
-import { addressSchema, updateUserScehma } from "../schema/user.js";
+import { addressSchema, updateUserRoleSchema, updateUserScehma } from "../schema/user.js";
 import { UnProcessedEntity } from "../exceptions/validation.js";
 import { ErrorCode } from "../exceptions/root.js";
 import type { Params } from "../types/product.js";
 import { BadRequestException } from "../exceptions/bad-request.js";
 import { UnAuthorized } from "../exceptions/unauthorize.js";
+import { NotFound } from "../exceptions/notFound.js";
 
 export const addAddress = async(req: Request, res: Response, next: NextFunction) =>{
   
@@ -122,4 +123,63 @@ export const updateUser = async(req: Request, res: Response, next: NextFunction)
     return next(new UnProcessedEntity("could not update user", ErrorCode.UNPROCESSED_ENTITY, 500, error))
   }
   
+}
+
+// fetch user list (admins only)
+
+export const fetchAllUsers = async(req: Request, res: Response)=>{
+
+  const allUsers = await prisma.user.findMany({
+    skip: Number(req.query.skip) || 0,
+    take: 5
+  })
+
+
+  res.json(allUsers)
+}
+
+// fetch users by ID (admins only)
+
+export const fetchUserById = async(req: Request, res: Response, next: NextFunction)=>{
+
+  try{
+    const user = await prisma.user.findFirstOrThrow({
+      where: {
+        id: String(req.params.id)
+      },
+      include: {
+        adress: true
+      }
+    })
+
+    res.json(user)
+  }catch (error){
+    return next(new NotFound("user id not found.",ErrorCode.USER_NOT_FOUND, error))
+  }
+  
+}
+
+// change user roles (admins only)
+export const changeUserRole = async(req: Request, res: Response, next: NextFunction) =>{
+
+  const validatedRole = updateUserRoleSchema.safeParse(req.body.role)
+  if (!validatedRole.success){
+    return next(new BadRequestException("Bad request, only 2 roles are allowed.",ErrorCode.UNPROCESSED_ENTITY))
+  }
+
+  try {
+    const user = await prisma.user.update({
+      where: {
+        id: String(req.params.id)
+      },
+      data: {
+        role: validatedRole.data
+      }
+    })
+    res.json(user)
+  } catch (error) {
+    return next(new NotFound("user id not found.", ErrorCode.USER_NOT_FOUND, error))
+  }
+  
+
 }
