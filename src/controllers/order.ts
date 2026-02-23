@@ -86,7 +86,8 @@ export const getOrderbyId = async(req:Request, res: Response, next: NextFunction
     
     const order  = await prisma.order.findFirstOrThrow({
       where: {
-        id: String(req.params.id)
+        id: String(req.params.id),
+        userId: req.user.id
       },
       include:{
         orderProduct: true,
@@ -129,4 +130,80 @@ export const cancelOrder = async(req:Request, res:Response, next: NextFunction)=
   })
   
 
+}
+
+
+// fetches all the orders for admin 
+export const fetchAllOrders = async(req: Request, res: Response) =>{
+  
+  const status = req.query.status;
+  let whereClause  = {}
+  if (status){
+    whereClause = {
+      status
+    }
+  }
+  
+  // whereClause is an optional
+  const allOrders = await prisma.order.findMany({
+    where: whereClause,
+    skip: Number(req.query.skip) || 0,
+    take: 5
+  })
+  res.json(allOrders)
+}
+
+// change the status of a order (admins only)
+export const changeOrderStatus = async(req:Request, res:Response, next: NextFunction) =>{
+
+  await prisma.$transaction(async(tx)=>{
+    try {
+      const order = await tx.order.update({
+        where: {
+          id: String(req.params.id)
+        },
+        data: {
+          status: req.body.status
+        }
+      })
+
+      await tx.orderEvent.create({
+        data:{
+          orderId: order.id,
+          status: req.body.status
+        }
+      })
+
+      res.json(order)
+    } catch (error) {
+      return next(new NotFound("order not found", ErrorCode.ORDER_ID_NOT_FOUND, error))
+    }
+
+  })
+  
+}
+
+// get orders of a user (admin)
+export const getOrderUser = async(req:Request, res:Response, next: NextFunction) =>{
+
+  let whereClause = {}
+  let status = req.query.status
+  if (status){
+    whereClause = {
+      status
+    }
+  }
+
+  try {
+    const userOrder = await prisma.order.findMany({
+      where:{
+        ... whereClause,
+        userId: String(req.params.id)
+      }
+    })
+
+    res.json(userOrder)
+  } catch (error) {
+    return next (new NotFound("user not found.", ErrorCode.USER_NOT_FOUND, error))
+  }
 }
