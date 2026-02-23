@@ -121,3 +121,29 @@ export const fetchAllProducts = async(req:Request, res:Response, next:NextFuncti
     return next( new UnProcessedEntity('Something went wrong', ErrorCode.UNPROCESSED_ENTITY, 500, error))
   }
 }
+
+
+// full text search - (/product?q=searchproducts)
+
+export const fullTextSearchProducts = async(req:Request, res:Response) =>{
+
+  
+  const results = await prisma.product.findMany({
+    where: {
+      name: {
+        search: String(req.query.q)
+      },
+      description: {
+        search: String(req.query.q)
+      },
+      tags: {
+        search: String(req.query.q)
+      }
+    },
+    skip: Number(req.query.skip) || 0,
+    take: 5
+  })
+  
+  res.json(results)
+
+}
